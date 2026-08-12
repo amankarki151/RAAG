@@ -1,0 +1,316 @@
+# =============================================================================
+# RAAG — AI-First Architectural Copilot
+# Monorepo .gitignore
+#
+# Layout:
+#   sample_engine/     — C++20 extraction layer
+#   tune_engine/       — Python 3.12 graph analytics layer
+#   master_engine/     — Python 3.12 AI orchestration layer
+#   cli/               — Typer/Rich command-line interface
+#   vscode-extension/  — TypeScript editor integration
+#
+# PATTERN NOTES (read before editing):
+#   - A pattern WITHOUT a trailing slash matches both files AND directories.
+#     Always add a trailing slash when you mean a directory.
+#   - Negation (!) only works if the PARENT directory is not itself ignored.
+#     Git never descends into an ignored directory, so `dir/` + `!dir/.gitkeep`
+#     will NOT work. Use `dir/*` + `!dir/.gitkeep` instead.
+#   - .gitignore only affects UNTRACKED files. Anything already committed
+#     stays tracked until explicitly removed with `git rm --cached`.
+# =============================================================================
+
+
+# =============================================================================
+# 1. SECURITY — first by convention. Nothing else matters if a key leaks.
+# =============================================================================
+
+# Environment files (API keys, DB URLs, local credentials)
+.env
+.env.*
+!.env.example                 # Committed template — PLACEHOLDER VALUES ONLY
+
+# Secret material of any kind
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.json
+credentials.json
+config.local.*
+
+# Cloud / service provider credential caches
+.aws/
+.gcloud/
+
+
+# =============================================================================
+# 2. C++20 — SAMPLE ENGINE
+# =============================================================================
+
+# --- CMake build trees -----------------------------------------------------
+build/
+build-*/
+cmake-build-*/                # CLion-style build directories
+out/build/                    # VS Code CMake Tools default output path
+
+# --- CMake generated files -------------------------------------------------
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+CMakeUserPresets.json         # Machine-local. CMakePresets.json IS committed.
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+Testing/
+_deps/                        # FetchContent dependency downloads
+
+# --- Compilation database (machine-specific absolute paths) ---------------
+compile_commands.json
+.cache/                       # clangd index cache
+
+# --- Object files & intermediates ------------------------------------------
+*.o
+*.obj
+*.lo
+*.slo
+*.gch
+*.pch
+*.d
+
+# --- Libraries ---------------------------------------------------------------
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.pyd                         # pybind11 module output (Windows)
+
+# --- Executables -------------------------------------------------------------
+# Anchored to the build output path so a *directory* of the same name is
+# never accidentally ignored.
+sample_engine/build/raag_sample
+*.exe
+*.app
+*.out
+
+# --- Debug symbols (macOS emits .dSYM bundles beside binaries) -------------
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# --- Sanitizer / profiling output ------------------------------------------
+*.gcda
+*.gcno
+*.gcov
+*.profraw
+*.profdata
+callgrind.out.*
+perf.data*
+
+
+# =============================================================================
+# 3. PYTHON 3.12 — TUNE ENGINE, MASTER ENGINE, CLI
+# =============================================================================
+
+# --- Virtual environments ----------------------------------------------------
+.venv/
+.venv*/
+venv/
+env/
+ENV/
+.python-version               # pyenv local override
+
+# --- Bytecode & caches -------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Packaging / distribution -----------------------------------------------
+dist/
+*.egg-info/
+*.egg
+.eggs/
+wheels/
+MANIFEST
+# NOTE: lockfiles (requirements.txt, poetry.lock, uv.lock) are COMMITTED —
+# they are how a reviewer reproduces your exact environment.
+
+# --- Testing & coverage ------------------------------------------------------
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/                      # Generated HTML report — regenerate, don't commit
+.hypothesis/
+
+# --- Type checking & linting caches -----------------------------------------
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+
+# --- Notebooks (ad-hoc metric exploration) ----------------------------------
+.ipynb_checkpoints/
+
+
+# =============================================================================
+# 4. RAAG RUNTIME ARTIFACTS — generated data, not source
+#
+# These use `dir/*` + `!dir/.gitkeep` so the FOLDER STRUCTURE is tracked in
+# Git while its generated contents are ignored. Create a .gitkeep in each.
+# =============================================================================
+
+# --- Sample Engine binary AST snapshots -------------------------------------
+*.raag.bin
+*.raagbin
+snapshots/*
+!snapshots/.gitkeep
+.raag_cache/
+
+# --- Tune Engine graph & metrics output -------------------------------------
+graphs/*
+!graphs/.gitkeep
+metrics/*
+!metrics/.gitkeep
+reports/*
+!reports/.gitkeep
+
+# --- Master Engine audit database (SQLite) ----------------------------------
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# --- Qdrant local vector store persistence ----------------------------------
+qdrant_storage/
+.qdrant/
+
+# --- Logs ---------------------------------------------------------------------
+*.log
+logs/*
+!logs/.gitkeep
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+# =============================================================================
+# 5. DOCKER & CI/CD
+# =============================================================================
+
+# Local compose overrides (developer-specific ports, mounts, resource limits)
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Docker build context leftovers
+.docker/
+
+# NOTE: Dockerfile, docker-compose.yml, .dockerignore, and everything under
+# .github/workflows/ ARE committed — they are core deliverables.
+
+
+# =============================================================================
+# 6. TYPESCRIPT / NODE — VS CODE EXTENSION
+# =============================================================================
+
+node_modules/
+vscode-extension/out/
+vscode-extension/dist/
+*.vsix                        # Packaged extension bundle
+.npm/
+.yarn/
+.pnp.*
+*.tsbuildinfo
+# NOTE: package-lock.json / yarn.lock ARE committed.
+
+
+# =============================================================================
+# 7. EDITOR & IDE
+#
+# VS Code workspace config IS committed (settings, tasks, launch, extensions)
+# so the dev environment is reproducible for anyone cloning the repo.
+# Only machine-local state is excluded.
+# =============================================================================
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/c_cpp_properties.json
+.vscode/ipch/
+.history/
+
+# JetBrains
+.idea/
+*.iml
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+\#*\#
+.\#*
+
+
+# =============================================================================
+# 8. OPERATING SYSTEM
+# =============================================================================
+
+# macOS
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+Icon?
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+.Trash-*
+.nfs*
+
+
+# =============================================================================
+# 9. MISC
+# =============================================================================
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+
+# Archives (should not live in source control)
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Benchmark scratch — target repositories cloned for local analysis runs
+benchmark_repos/
+test_corpus/

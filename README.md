@@ -216,7 +216,7 @@ state, not planned scope.
 
 | Component | Status |
 | --------- | ------ |
-| Sample Engine — AST parsing | 🔧 In progress |
+| Sample Engine — AST parsing | ✅ Complete |
 | Sample Engine — concurrency & serialization | 📋 Planned |
 | Sample ↔ Tune binary contract | 📋 Planned |
 | Tune Engine — dependency graph | 📋 Planned |

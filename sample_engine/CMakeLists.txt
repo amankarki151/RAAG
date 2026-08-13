@@ -253,7 +253,11 @@ add_library(raag_sample_core STATIC
     src/ast_node.cpp
     src/tree_sitter_parser.cpp
     src/ast_builder.cpp
+    src/thread_pool.cpp
+    src/file_walker.cpp
+    src/snapshot.cpp
 )
+
 
 target_include_directories(raag_sample_core
     PUBLIC

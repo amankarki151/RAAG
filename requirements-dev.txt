@@ -1,0 +1,14 @@
+# RAAG development dependencies.
+#
+# Installing this file installs the runtime requirements too, so a contributor
+# runs one command rather than two and cannot end up with a partial setup.
+
+-r requirements.txt
+
+# Testing
+pytest~=8.3
+pytest-cov~=6.0
+
+# Static analysis
+mypy~=1.13
+ruff~=0.8

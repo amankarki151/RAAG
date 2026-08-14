@@ -1,0 +1,12 @@
+# RAAG runtime dependencies.
+#
+# Pinned to compatible-release ranges (~=) rather than exact versions: patch
+# updates carry security fixes and should not require a manual bump, while
+# minor updates can change behaviour and should be deliberate.
+
+# Graph construction and traversal (Tune Engine)
+networkx~=3.4
+
+# CLI
+typer~=0.15
+rich~=13.9

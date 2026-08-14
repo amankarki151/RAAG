@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Lack of Cohesion of Methods (LCOM) analysis for Single Responsibility
   Principle violation detection.
 - Structured metrics report with configurable violation thresholds.
+- Binary snapshot reader with schema version validation and defensive
+  bounds checking on all length-prefixed fields.
 
 #### Master Engine (Python 3.12 — Orchestration Layer)
 - AST-boundary-aware code chunking at function and class granularity.
@@ -59,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 - Technical specification covering architecture, engine internals, metric
   definitions, and design rationale.
-- Inter-engine binary contract specification.
+- Inter-engine binary contract specification (docs/CONTRACTS.md).
 - Metric derivation reference.
 
 ---

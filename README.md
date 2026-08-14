@@ -119,6 +119,17 @@ memory. Any engine can be replaced, benchmarked, or tested in isolation.
 
 ## Architecture
 
+## Results
+
+Benchmarked on 579 source files from open-source C++ repositories (Release build, 8 cores):
+
+| | Time | Throughput |
+|---|---|---|
+| Single-threaded | 1.657 s | 349.4 files/s |
+| Parallel | 0.449 s | 1290.2 files/s |
+
+**3.69x speedup.** 1,099,446 AST nodes extracted, zero parse failures, serialized to a 27.6 MB versioned binary snapshot.
+
 ### Design Constraints
 
 RAAG was built against four constraints that shaped every subsequent decision:
@@ -225,7 +236,7 @@ state, not planned scope.
 | --------- | ------ |
 | Sample Engine — AST parsing | ✅ Complete |
 | Sample Engine — concurrency & serialization | ✅ Complete |
-| Sample ↔ Tune binary contract | 📋 Planned |
+| Sample ↔ Tune binary contract | ✅ Complete |
 | Tune Engine — dependency graph | 📋 Planned |
 | Tune Engine — metrics | 📋 Planned |
 | Master Engine — vector store | 📋 Planned |

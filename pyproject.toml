@@ -1,0 +1,106 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "raag"
+version = "0.1.0"
+description = "Repository-scale architectural analytics"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+
+[tool.setuptools]
+package-dir = { "" = "tune_engine" }
+
+[tool.setuptools.packages.find]
+where = ["tune_engine"]
+
+# -----------------------------------------------------------------------------
+# Ruff — linting and formatting
+# -----------------------------------------------------------------------------
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+src = ["tune_engine", "master_engine", "cli"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # import sorting
+    "N",    # PEP 8 naming
+    "UP",   # pyupgrade — flags syntax superseded by newer Python
+    "B",    # bugbear — likely bugs rather than style
+    "A",    # builtin shadowing
+    "C4",   # comprehension simplification
+    "SIM",  # simplification
+    "PTH",  # prefer pathlib over os.path
+    "RUF",  # ruff-specific rules
+    "ANN",  # missing type annotations
+    "TID",  # tidy imports
+]
+
+ignore = [
+    "ANN401",  # Allows `Any` where it is genuinely the right type.
+    "B008",    # Function call in default argument — Typer's API depends on it.
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests deliberately construct malformed input and assert on it. Requiring full
+# annotations on every fixture adds noise without catching bugs.
+"**/tests/**" = ["ANN", "S101"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["raag_tune", "raag_master", "raag_cli"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# -----------------------------------------------------------------------------
+# Mypy — type checking
+#
+# Strict mode is on. The engines exchange data through a binary contract where a
+# field-type mismatch produces silently wrong analysis rather than a crash, so
+# static verification of those types is worth the friction.
+# -----------------------------------------------------------------------------
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+warn_return_any = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+no_implicit_reexport = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = ["networkx.*"]
+ignore_missing_imports = true
+
+# -----------------------------------------------------------------------------
+# Pytest
+# -----------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["tune_engine/tests", "master_engine/tests"]
+python_files = ["test_*.py"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-ra",
+]
+
+[tool.coverage.run]
+source = ["tune_engine/raag_tune", "master_engine/raag_master"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]

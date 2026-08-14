@@ -238,7 +238,7 @@ state, not planned scope.
 | Sample Engine — concurrency & serialization | ✅ Complete |
 | Sample ↔ Tune binary contract | ✅ Complete |
 | Tune Engine — dependency graph | ✅ Complete |
-| Tune Engine — metrics | 📋 Planned |
+| Tune Engine — metrics | ✅ Complete |
 | Master Engine — vector store | 📋 Planned |
 | Master Engine — GraphRAG pipeline | 📋 Planned |
 | CLI | 📋 Planned |

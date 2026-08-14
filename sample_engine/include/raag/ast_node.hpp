@@ -34,18 +34,28 @@ namespace raag {
 
 /// Structural classification of a node, normalized across languages.
 ///
-/// Deliberately coarse: RAAG reasons about architecture, not syntax, so it
-/// needs to know that something is a function without caring whether the
-/// grammar called it `function_definition` or `function_declaration`.
+/// WIRE FORMAT: these integer values are part of the snapshot format. New kinds
+/// append at the end and increment the schema version. Reordering or inserting
+/// a member elsewhere silently reinterprets every existing snapshot — every
+/// Class becomes a Function — and nothing errors. See docs/CONTRACTS.md.
 enum class AstNodeKind : std::uint8_t {
-    File,
-    Class,
-    Function,
-    Import,
-    CallExpression,
-    Variable,
-    Other,
+    File = 0,
+    Class = 1,
+    Function = 2,
+    Import = 3,
+    CallExpression = 4,
+    Variable = 5,
+    Other = 6,
+
+    /// A read or write of a member field through the enclosing instance:
+    /// `self.count` in Python, `this->count` in C++.
+    ///
+    /// Added in schema version 2. Cohesion analysis needs to know which method
+    /// touches which field, and that relation cannot be recovered from class,
+    /// method, and field declarations alone.
+    FieldAccess = 7,
 };
+
 
 /// Human-readable name for a node kind, for diagnostics and CLI output.
 [[nodiscard]] std::string_view to_string(AstNodeKind kind) noexcept;

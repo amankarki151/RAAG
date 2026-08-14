@@ -55,8 +55,10 @@
 
 namespace raag {
 
-/// Current on-disk schema version. Increment on any layout change.
-inline constexpr std::uint32_t kSchemaVersion = 1;
+// Added in v2: FieldAccess kind.
+inline constexpr std::uint32_t kSchemaVersion = 2;
+
+
 
 /// Four-byte file signature, checked before anything else is read.
 inline constexpr char kSnapshotMagic[4] = {'R', 'A', 'A', 'G'};

@@ -58,6 +58,32 @@ std::string strip_include_delimiters(std::string text) {
     return text;
 }
 
+/// Extracts the field name from a member access expression.
+///
+/// Only accesses through the enclosing instance count — `self.x` in Python,
+/// `this->x` in C++. An access through some other object is a dependency on
+/// that object, not a use of this class's own state, and counting it would
+/// make every class look cohesive regardless of how its methods actually
+/// relate.
+std::string extract_field_access(TSNode node, std::string_view source, Language language) {
+    if (language == Language::Cpp) {
+        TSNode argument = field(node, "argument");
+        if (ts_node_is_null(argument) || !type_is(argument, "this")) {
+            return {};
+        }
+        TSNode member = field(node, "field");
+        return ts_node_is_null(member) ? std::string{} : text_of(member, source);
+    }
+
+    TSNode object = field(node, "object");
+    if (ts_node_is_null(object) || text_of(object, source) != "self") {
+        return {};
+    }
+    TSNode attribute = field(node, "attribute");
+    return ts_node_is_null(attribute) ? std::string{} : text_of(attribute, source);
+}
+
+
 /// Extracts what an import node refers to.
 ///
 /// Import targets live in different fields per grammar, and none of them is the
@@ -165,6 +191,10 @@ std::string extract_name(TSNode node,
     if (kind == AstNodeKind::Import) {
         return extract_import_target(node, source, language);
     }
+        if (kind == AstNodeKind::FieldAccess) {
+        return extract_field_access(node, source, language);
+    }
+
 
     // Direct case: the grammar exposes a "name" field.
     TSNode name_node = field(node, "name");
@@ -226,9 +256,14 @@ AstNodeKind classify_node(std::string_view type, Language language) noexcept {
     }
 
     if (language == Language::Cpp) {
+        
         if (type == "function_definition" || type == "template_declaration") {
             return AstNodeKind::Function;
         }
+        if (type == "field_expression") {
+            return AstNodeKind::FieldAccess;
+        }
+
         if (type == "class_specifier" || type == "struct_specifier" ||
             type == "union_specifier") {
             return AstNodeKind::Class;
@@ -244,6 +279,10 @@ AstNodeKind classify_node(std::string_view type, Language language) noexcept {
         if (type == "function_definition") {
             return AstNodeKind::Function;
         }
+        if (type == "attribute") {
+            return AstNodeKind::FieldAccess;
+        }
+
         if (type == "class_definition") {
             return AstNodeKind::Class;
         }

@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Snapshot schema version 2: added the `FieldAccess` node kind. Existing
+  snapshots must be regenerated.
+
 ### Added
 
 #### Sample Engine (C++20 — Extraction Layer)

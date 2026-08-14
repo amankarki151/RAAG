@@ -22,7 +22,7 @@ __all__ = [
     "read_snapshot_header",
 ]
 
-SUPPORTED_SCHEMA_VERSION = 1
+SUPPORTED_SCHEMA_VERSION = 2
 """Schema version this reader understands.
 
 Independent of the platform version. A layout change breaks the Sample-to-Tune

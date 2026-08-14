@@ -47,7 +47,7 @@ at runtime, in production, as corrupt data.
 **Producer:** Sample Engine (`sample_engine/src/snapshot.cpp`)
 **Consumer:** Tune Engine (`tune_engine/raag_tune/snapshot_reader.py`)
 **File extension:** `.raag.bin`
-**Current version:** `1`
+**Current version:** `2`
 
 A snapshot holds the parsed abstract syntax trees of every source file in one
 analysed repository.
@@ -63,7 +63,7 @@ null-terminated.
 │ HEADER                                                  │
 ├──────────────────┬──────────┬───────────────────────────┤
 │ magic            │ 4 bytes  │ ASCII "RAAG"              │
-│ schema_version   │ uint32   │ Currently 1               │
+│ schema_version   │ uint32   │ Currently 2               │
 │ file_count       │ uint32   │ Number of file records    │
 └──────────────────┴──────────┴───────────────────────────┘
 
@@ -124,6 +124,7 @@ to the file record they appear in — they do not address across files.
 | `4` | `CallExpression` | Function or method invocation. |
 | `5` | `Variable` | Variable, field, or parameter declaration. |
 | `6` | `Other` | Anything not classified above. |
+| `7` | `FieldAccess` | A read or write of a member field through the enclosing instance (`self.x` in Python, `this->x` in C++). Added in schema version 2. |
 
 **These values are fixed by the format.** Reordering them, or inserting a
 member anywhere but the end, silently reinterprets every existing snapshot —
@@ -160,12 +161,19 @@ incorrect dependency edges — far harder to diagnose than a failed assertion.
 
 ## Schema versioning
 
+### Version history
+
+| Version | Change |
+| ------- | ------ |
+| 1 | Initial format. |
+| 2 | Added `FieldAccess` (kind `7`), recording member accesses through the enclosing instance. Cohesion analysis needs to know which method touches which field, and that relation cannot be recovered from declarations alone. While readers treating unknown kinds as `Other` are technically structurally compatible with this addition, the strict version bump prevents older readers from silently misclassifying the data. |
+
 `schema_version` is **independent of the platform version**. RAAG can go from
 `0.4.0` to `0.5.0` without touching it, and a change to it can force a major
 bump even in an otherwise minor release.
 
 The reader **rejects an unrecognised version outright.** It does not attempt a
-best-effort parse.
+best-effort parse. A strict version bump triggers an immediate rejection rather than best-effort backward-compatible parsing, unless the reader has been explicitly updated to support a range of versions.
 
 This is the important design decision in the whole format. Reading a changed
 layout as though it were the current one usually *succeeds* — the byte counts

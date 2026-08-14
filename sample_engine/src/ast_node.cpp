@@ -12,6 +12,7 @@ std::string_view to_string(AstNodeKind kind) noexcept {
         case AstNodeKind::Import:         return "Import";
         case AstNodeKind::CallExpression: return "Call";
         case AstNodeKind::Variable:       return "Variable";
+        case AstNodeKind::FieldAccess:    return "FieldAccess";
         case AstNodeKind::Other:          return "Other";
     }
     // Unreachable for a well-formed enum value. Returned rather than

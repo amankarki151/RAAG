@@ -176,12 +176,14 @@ def topological_layers(graph: nx.DiGraph) -> list[list[str]]:
 def summarise_graph(graph: nx.DiGraph) -> GraphSummary:
     """Compute headline figures for a dependency graph."""
     import_edges = sum(
-        1 for _, _, data in graph.edges(data=True) if EdgeKind.IMPORT in data["kinds"]
+        1
+        for _, _, data in graph.edges(data=True)
+        if EdgeKind.IMPORT in data.get("kinds", [])
     )
     inheritance_edges = sum(
         1
         for _, _, data in graph.edges(data=True)
-        if EdgeKind.INHERITANCE in data["kinds"]
+        if EdgeKind.INHERITANCE in data.get("kinds", [])
     )
 
     cycles = find_cycles(graph)

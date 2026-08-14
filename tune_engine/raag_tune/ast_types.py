@@ -36,6 +36,7 @@ class AstNodeKind(IntEnum):
     CALL_EXPRESSION = 4
     VARIABLE = 5
     OTHER = 6
+    FIELD_ACCESS = 7
 
     def __str__(self) -> str:
         return _KIND_NAMES[self]
@@ -49,6 +50,7 @@ _KIND_NAMES: dict[AstNodeKind, str] = {
     AstNodeKind.CALL_EXPRESSION: "Call",
     AstNodeKind.VARIABLE: "Variable",
     AstNodeKind.OTHER: "Other",
+    AstNodeKind.FIELD_ACCESS: "FieldAccess",
 }
 
 

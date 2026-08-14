@@ -17,6 +17,7 @@
 
 ## Table of Contents
 
+- [Writing](#writing)
 - [Overview](#overview)
 - [The Problem](#the-problem)
 - [How RAAG Works](#how-raag-works)
@@ -33,6 +34,12 @@
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
+
+---
+
+## Writing
+
+- [Building a Parallel C++ Source Parser: jthread, stop_token, and the Deadlock I Didn't See Coming](https://amankarki.hashnode.dev/parallel-cpp-source-parser-jthread-stop-token) — *Hashnode (also on Medium)*
 
 ---
 

@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   native tree format.
 - `std::jthread` worker pool with cooperative cancellation via `std::stop_token`.
 - Versioned binary snapshot serialization for downstream consumption.
+- Import target and inheritance base-type extraction, without which the
+  snapshot recorded that a file had imports but not what they referenced.
+
 
 #### Tune Engine (Python 3.12 — Quality Analytics Layer)
 - Binary snapshot reader with cross-engine schema version validation.
@@ -34,6 +37,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Structured metrics report with configurable violation thresholds.
 - Binary snapshot reader with schema version validation and defensive
   bounds checking on all length-prefixed fields.
+  - Import resolution against the parsed file set, with explicit reporting of
+  resolved, ambiguous, and external outcomes.
+- Dependency graph construction over NetworkX, with parallel edges collapsed
+  to a single weighted edge.
+- Cycle detection via strongly connected components, and dependency layering
+  over the condensation so cyclic repositories still produce a usable ordering.
 
 #### Master Engine (Python 3.12 — Orchestration Layer)
 - AST-boundary-aware code chunking at function and class granularity.

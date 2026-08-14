@@ -29,18 +29,165 @@ TSNode field(TSNode node, const char* field_name) {
         node, field_name, static_cast<std::uint32_t>(std::strlen(field_name)));
 }
 
+bool type_is(TSNode node, const char* expected) {
+    return std::strcmp(ts_node_type(node), expected) == 0;
+}
+
+/// Strips the delimiters from a C++ include path.
+///
+/// The grammar returns the target with its delimiters attached — either
+/// <vector> or "local.hpp". Both are stripped to bare text. The system/local
+/// distinction is not preserved because it does not survive across projects
+/// anyway: a header on the include path in one build is vendored in the next.
+/// Resolution downstream is by lookup against the actual file set instead.
+std::string strip_include_delimiters(std::string text) {
+    if (text.size() < 2) {
+        return text;
+    }
+
+    const char first = text.front();
+    const char last = text.back();
+
+    const bool angled = (first == '<' && last == '>');
+    const bool quoted = (first == '"' && last == '"');
+
+    if (angled || quoted) {
+        return text.substr(1, text.size() - 2);
+    }
+
+    return text;
+}
+
+/// Extracts what an import node refers to.
+///
+/// Import targets live in different fields per grammar, and none of them is the
+/// "name" field the general extractor looks for. Without this the snapshot
+/// records that a file has imports but not what they import — which is exactly
+/// the information the dependency graph is built from.
+std::string extract_import_target(TSNode node,
+                                  std::string_view source,
+                                  Language language) {
+    if (language == Language::Cpp) {
+        // #include <vector> / #include "local.hpp"
+        TSNode path_node = field(node, "path");
+        if (!ts_node_is_null(path_node)) {
+            return strip_include_delimiters(text_of(path_node, source));
+        }
+
+        // using namespace foo; / using foo::bar;
+        // The whole declaration minus the keyword: the grammar exposes no
+        // single field covering the qualified name.
+        std::string text = text_of(node, source);
+        constexpr std::string_view kUsing = "using ";
+        if (text.rfind(kUsing, 0) == 0) {
+            text.erase(0, kUsing.size());
+        }
+        if (!text.empty() && text.back() == ';') {
+            text.pop_back();
+        }
+        return text;
+    }
+
+    // Python.
+    //
+    //   import os                  -> "name" holds os
+    //   import os.path as p        -> "name" holds an aliased_import
+    //   from pathlib import Path   -> "module_name" holds pathlib
+    //   from . import sibling      -> "module_name" holds a relative_import
+    TSNode module_name = field(node, "module_name");
+    if (!ts_node_is_null(module_name)) {
+        return text_of(module_name, source);
+    }
+
+    TSNode name_node = field(node, "name");
+    if (!ts_node_is_null(name_node)) {
+        // An aliased import wraps the real target one level deeper.
+        if (type_is(name_node, "aliased_import")) {
+            TSNode inner = field(name_node, "name");
+            if (!ts_node_is_null(inner)) {
+                return text_of(inner, source);
+            }
+        }
+        return text_of(name_node, source);
+    }
+
+    return {};
+}
+
+/// Extracts the base types a class declaration inherits from, comma-joined.
+///
+/// The snapshot format carries one string per node, and widening it for a case
+/// this narrow is not worth a schema break; the graph layer splits on the
+/// separator. Recorded here rather than derived later because the structural
+/// position of a base clause is grammar-specific, and grammar knowledge belongs
+/// on this side of the boundary.
+std::string extract_base_types(TSNode node, std::string_view source, Language language) {
+    const char* clause_type =
+        (language == Language::Cpp) ? "base_class_clause" : "argument_list";
+
+    const std::uint32_t child_count = ts_node_named_child_count(node);
+    std::string joined;
+
+    for (std::uint32_t i = 0; i < child_count; ++i) {
+        TSNode child = ts_node_named_child(node, i);
+        if (!type_is(child, clause_type)) {
+            continue;
+        }
+
+        const std::uint32_t base_count = ts_node_named_child_count(child);
+        for (std::uint32_t j = 0; j < base_count; ++j) {
+            std::string base = text_of(ts_node_named_child(child, j), source);
+            if (base.empty()) {
+                continue;
+            }
+            if (!joined.empty()) {
+                joined += ',';
+            }
+            joined += base;
+        }
+        break;
+    }
+
+    return joined;
+}
+
 /// Best-effort symbol name for a node.
 ///
-/// APPROXIMATION: grammars disagree on where an identifier lives. Python puts
-/// a function's name directly in a "name" field; C++ wraps it in a declarator
-/// that may itself nest through pointers and references. This walks the common
-/// cases and gives up rather than guessing, because a wrong name is worse than
-/// an absent one — it would produce a confidently incorrect dependency edge.
-std::string extract_name(TSNode node, std::string_view source) {
+/// APPROXIMATION: grammars disagree on where an identifier lives. Python puts a
+/// function's name directly in a "name" field; C++ wraps it in a declarator that
+/// may itself nest through pointers and references. This walks the common cases
+/// and gives up rather than guessing, because a wrong name is worse than an
+/// absent one — it would produce a confidently incorrect dependency edge.
+std::string extract_name(TSNode node,
+                         std::string_view source,
+                         AstNodeKind kind,
+                         Language language) {
+    if (kind == AstNodeKind::Import) {
+        return extract_import_target(node, source, language);
+    }
+
     // Direct case: the grammar exposes a "name" field.
     TSNode name_node = field(node, "name");
     if (!ts_node_is_null(name_node)) {
-        return text_of(name_node, source);
+        std::string name = text_of(name_node, source);
+
+        // A class carries its base types alongside its own name so the graph
+        // layer can record inheritance edges without re-parsing.
+        if (kind == AstNodeKind::Class) {
+            const std::string bases = extract_base_types(node, source, language);
+            if (!bases.empty()) {
+                name += " : " + bases;
+            }
+        }
+        return name;
+    }
+
+    // Call expressions name their callee in a "function" field.
+    if (kind == AstNodeKind::CallExpression) {
+        TSNode callee = field(node, "function");
+        if (!ts_node_is_null(callee)) {
+            return text_of(callee, source);
+        }
     }
 
     // C++ case: descend through declarators to the innermost identifier.
@@ -55,7 +202,12 @@ std::string extract_name(TSNode node, std::string_view source) {
             std::strcmp(type, "operator_name") == 0) {
             return text_of(declarator, source);
         }
-        declarator = field(declarator, "declarator");
+
+        TSNode inner = field(declarator, "declarator");
+        if (ts_node_is_null(inner)) {
+            break;
+        }
+        declarator = inner;
         ++guard;
     }
 
@@ -74,13 +226,8 @@ AstNodeKind classify_node(std::string_view type, Language language) noexcept {
     }
 
     if (language == Language::Cpp) {
-        if (type == "function_definition" || type == "declaration" ||
-            type == "template_declaration") {
-            // "declaration" covers function prototypes; treating them as
-            // functions is intentional, since a prototype still participates
-            // in the dependency graph.
-            return type == "declaration" ? AstNodeKind::Variable
-                                         : AstNodeKind::Function;
+        if (type == "function_definition" || type == "template_declaration") {
+            return AstNodeKind::Function;
         }
         if (type == "class_specifier" || type == "struct_specifier" ||
             type == "union_specifier") {
@@ -89,8 +236,8 @@ AstNodeKind classify_node(std::string_view type, Language language) noexcept {
         if (type == "preproc_include" || type == "using_declaration") {
             return AstNodeKind::Import;
         }
-        if (type == "field_declaration" || type == "init_declarator" ||
-            type == "parameter_declaration") {
+        if (type == "declaration" || type == "field_declaration" ||
+            type == "init_declarator" || type == "parameter_declaration") {
             return AstNodeKind::Variable;
         }
     } else {  // Language::Python
@@ -132,7 +279,7 @@ AstArena build_ast(TSNode root, std::string_view source, Language language) {
 
     AstNode root_record;
     root_record.kind = classify_node(ts_node_type(root), language);
-    root_record.name = extract_name(root, source);
+    root_record.name = extract_name(root, source, root_record.kind, language);
     root_record.byte_start = ts_node_start_byte(root);
     root_record.byte_end = ts_node_end_byte(root);
     root_record.parent_index = -1;
@@ -145,9 +292,9 @@ AstArena build_ast(TSNode root, std::string_view source, Language language) {
         pending.pop();
 
         // Named children only. Tree-sitter also exposes anonymous nodes for
-        // punctuation and keywords — braces, semicolons, `return` — which
-        // carry no structural meaning for architectural analysis and would
-        // multiply the node count several-fold for nothing.
+        // punctuation and keywords — braces, semicolons, `return` — which carry
+        // no structural meaning for architectural analysis and would multiply
+        // the node count several-fold for nothing.
         const std::uint32_t child_count = ts_node_named_child_count(current.ts_node);
         if (child_count == 0) {
             continue;
@@ -162,7 +309,7 @@ AstArena build_ast(TSNode root, std::string_view source, Language language) {
 
             AstNode record;
             record.kind = classify_node(ts_node_type(child), language);
-            record.name = extract_name(child, source);
+            record.name = extract_name(child, source, record.kind, language);
             record.byte_start = ts_node_start_byte(child);
             record.byte_end = ts_node_end_byte(child);
             record.parent_index = static_cast<std::int32_t>(current.arena_index);

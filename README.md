@@ -237,7 +237,7 @@ state, not planned scope.
 | Sample Engine — AST parsing | ✅ Complete |
 | Sample Engine — concurrency & serialization | ✅ Complete |
 | Sample ↔ Tune binary contract | ✅ Complete |
-| Tune Engine — dependency graph | 📋 Planned |
+| Tune Engine — dependency graph | ✅ Complete |
 | Tune Engine — metrics | 📋 Planned |
 | Master Engine — vector store | 📋 Planned |
 | Master Engine — GraphRAG pipeline | 📋 Planned |
@@ -408,6 +408,16 @@ These are documented deliberately — accurate scoping is part of the engineerin
   fix and is planned.
 - **Language coverage is limited to available Tree-sitter grammars** and to the
   edge-extraction rules implemented per language.
+- **Import resolution is a suffix match, not a semantic lookup.** RAAG has no
+  compiler include path or `sys.path`; it matches import text against the file
+  set it parsed, with tie-break rules where several files could answer. Every
+  run reports its resolved / ambiguous / external ratio so the graph's
+  reliability is visible rather than assumed. Semantic resolution via a
+  compilation database is the correct fix and is on the roadmap.
+- **Call edges are not extracted.** Resolving a callee to a definition needs
+  overload sets, virtual dispatch targets, and namespace lookup, none of which
+  survive in a parse tree. Emitting call edges from name matching alone would
+  produce a graph that looks richer and is measurably less correct.
 
 ---
 

@@ -9,54 +9,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [Unreleased]
- 
+
 ### Added
- 
-#### Master Engine (Python 3.12 — Orchestration Layer)
-- AST-boundary-aware code chunking at function and class granularity, with
-  size floors and ceilings tuned for retrieval quality rather than storage
-  efficiency.
-- Pluggable embedding layer behind an `Embedder` protocol, with a semantic
-  fastembed implementation and a deterministic offline fallback for testing.
-- Qdrant collection management with coupling metrics attached to every
-  chunk's payload at index time.
-- Metadata-filtered similarity search, restricting retrieval to a given set
-  of files — the mechanism blast-radius scoping will drive.
-- Progress reporting during embedding via tqdm, since semantic embedding on a
-  full repository is slow enough on CPU that a silent wait is indistinguishable
-  from a hang.
-- Blast radius computation over the dependency graph with bounded traversal
-  depth.
-- Context assembly injecting exact coupling metrics alongside retrieved
-  source.
-- Structurally-grounded refactoring analysis via AI reasoning backend.
-- SQLite audit log capturing target node, blast radius, metrics snapshot,
-  assembled prompt, and returned plan for every request.
-  
+
 #### Developer Experience
 - `raag sample`, `raag tune`, and `raag master refactor` commands via Typer.
 - Styled terminal reporting and progress indication via Rich.
 - Editor extension surfacing module instability as inline decorations.
+
 #### Infrastructure
 - Monorepo layout with independently buildable engine boundaries.
 - CMake build configuration for the C++ extraction layer.
 - Container definitions and service composition for local orchestration.
 - Continuous integration workflow enforcing instability thresholds on pull
   requests, with automated remediation suggestions.
+
 ### Documentation
 - Technical specification covering architecture, engine internals, metric
   definitions, and design rationale.
+
 ---
- 
+
+## [0.2.0] - 2026-08-15
+
+Full pipeline end to end: a refactoring request scoped by dependency
+graph, retrieved with structural filtering, assembled with injected
+metrics, reasoned over by an LLM, and logged for audit.
+
+### Added
+
+#### Master Engine (Python 3.12 — Orchestration Layer)
+- AST-boundary-aware code chunking at function and class granularity,
+  with content-hashed identity so re-indexing overwrites rather than
+  duplicates.
+- Pluggable embedding layer behind an `Embedder` protocol, with a
+  semantic fastembed implementation and a deterministic offline
+  fallback for testing.
+- Qdrant collection management with coupling metrics attached to every
+  chunk's payload at index time.
+- Metadata-filtered similarity search, restricting retrieval to a
+  computed set of files rather than the whole repository.
+- Blast radius computation over the dependency graph, walking dependents
+  and dependencies separately and bounding traversal by depth.
+- Context assembly injecting exact Ca/Ce/I values alongside every
+  retrieved chunk, with an explicit character budget and truncation
+  reported rather than silently applied.
+- Pluggable reasoning backend behind a `Reasoner` protocol: an Anthropic
+  API implementation and a free dry-run mode that assembles and prints
+  the prompt without calling out.
+- SQLite audit log capturing target, full blast radius, metrics
+  snapshot, assembled prompt, and response — including failed requests
+  — for every reasoning call.
+- Progress reporting during embedding via tqdm.
+
+---
+
 ## [0.1.0] - 2026-08-14
- 
+
 First end-to-end usable slice: parse a repository, build its dependency
 graph, compute coupling and cohesion metrics.
- 
-### Added
- 
-#### Sample Engine (C++20 — Extraction Layer)
 
+### Added
+
+#### Sample Engine (C++20 — Extraction Layer)
 - Recursive filesystem traversal over target repositories via `std::filesystem`.
 - Tree-sitter integration for Concrete and Abstract Syntax Tree generation.
 - RAII wrapper types owning all parser and tree handles, guaranteeing
@@ -69,8 +84,8 @@ graph, compute coupling and cohesion metrics.
   snapshot recorded that a file had imports but not what they referenced.
 - Member field-access extraction (`self.x`, `this->x`), the data cohesion
   analysis is computed from.
-#### Tune Engine (Python 3.12 — Quality Analytics Layer)
 
+#### Tune Engine (Python 3.12 — Quality Analytics Layer)
 - Binary snapshot reader with cross-engine schema version validation and
   defensive bounds checking on all length-prefixed fields.
 - Dependency edge extraction for imports and inheritance, with import
@@ -91,16 +106,14 @@ graph, compute coupling and cohesion metrics.
   JSON export.
 
 ### Changed
-
 - Snapshot schema version 2: added the `FieldAccess` node kind. Existing
   snapshots must be regenerated.
 
 ### Documentation
-
 - Inter-engine binary contract specification (`docs/CONTRACTS.md`).
 - Metric derivation reference (`docs/METRICS.md`).
 
- ---
+---
 
 ## Conventions
 
@@ -139,6 +152,6 @@ platform version bump is only a MINOR increment.
 
 ---
 
-[Unreleased]: https://github.com/amankarki151/RAAG/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/amankarki151/RAAG/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/amankarki151/RAAG/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/amankarki151/RAAG/releases/tag/v0.1.0
-

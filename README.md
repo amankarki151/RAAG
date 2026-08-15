@@ -152,6 +152,17 @@ algorithms and orchestration, where library maturity and iteration speed matter
 more than raw throughput. The cost is an inter-process contract; the benefit is
 that each engine is written in the language its problem actually calls for.
 
+### Refactoring Pipeline
+
+Ran end-to-end against the 579-file benchmark: a request against
+`input_adapters.hpp` (Ca=4, Ce=5, I=0.56) computed a blast radius of 40
+dependents and 18 dependencies (truncated from 359 reachable), retrieved
+15 relevant code chunks via metadata-filtered vector search, assembled a
+17,477-character grounded prompt, and produced a structurally-informed
+refactoring recommendation — including a self-correction where the model
+identified that its own initial suggestion didn't hold for a header-only
+template library, and proposed a verifiable alternative instead.
+
 ---
 
 ## Engines
@@ -246,7 +257,7 @@ state, not planned scope.
 | Tune Engine — dependency graph | ✅ Complete |
 | Tune Engine — metrics | ✅ Complete |
 | Master Engine — vector store | ✅ Complete |
-| Master Engine — GraphRAG pipeline | 📋 Planned |
+| Master Engine — full pipeline + AI integration | ✅ Complete |
 | CLI | 📋 Planned |
 | CI/CD guardrail | 📋 Planned |
 | Editor extension | 📋 Planned |

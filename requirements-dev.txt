@@ -12,3 +12,5 @@ pytest-cov~=6.0
 # Static analysis
 mypy~=1.13
 ruff~=0.8
+
+types-tqdm~=4.67

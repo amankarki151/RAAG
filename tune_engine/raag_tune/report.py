@@ -84,7 +84,10 @@ class Violation:
     threshold: float
 
     def format_line(self) -> str:
-        return f"[{self.severity.upper():<7}] {self.rule:<22} {self.subject}\n           {self.message}"
+        return (
+            f"[{self.severity.upper():<7}] {self.rule:<22} {self.subject}\n"
+            f"           {self.message}"
+        )
 
 
 @dataclass(slots=True)
@@ -170,7 +173,8 @@ def _check_instability(
                 message=(
                     f"{module.afferent_coupling} modules depend on this file, but it "
                     f"depends on {module.efferent_coupling} others "
-                    f"(I={module.instability:.2f}, limit {thresholds.max_instability:.2f}). "
+                    f"(I={module.instability:.2f}, "
+                    f"limit {thresholds.max_instability:.2f}). "
                     f"Changes upstream can propagate through it to everything below."
                 ),
                 measured=module.instability,

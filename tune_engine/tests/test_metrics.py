@@ -44,7 +44,6 @@ def graph_from_edges(*edges: tuple[str, str]) -> nx.DiGraph:
         (2, 8, 0.8),
     ],
 )
-
 def test_instability_formula(afferent: int, efferent: int, expected: float) -> None:
     assert instability(afferent, efferent) == pytest.approx(expected)
 

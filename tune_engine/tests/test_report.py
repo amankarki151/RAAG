@@ -1,6 +1,4 @@
-from pathlib import Path
 """Tests for report assembly and threshold evaluation.
-
 The report is where numbers become judgements, so these tests focus on the
 policy boundaries: what fires, what does not, and what a violation says when it
 does. A violation message that gives no measured value and no threshold is
@@ -10,6 +8,7 @@ unactionable, and there are tests asserting both are present.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import networkx as nx
 import pytest

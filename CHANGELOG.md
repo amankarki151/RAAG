@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   chunk's payload at index time.
 - Metadata-filtered similarity search, restricting retrieval to a given set
   of files — the mechanism blast-radius scoping will drive.
+- Progress reporting during embedding via tqdm, since semantic embedding on a
+  full repository is slow enough on CPU that a silent wait is indistinguishable
+  from a hang.
 - Blast radius computation over the dependency graph with bounded traversal
   depth.
 - Context assembly injecting exact coupling metrics alongside retrieved
@@ -29,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Structurally-grounded refactoring analysis via AI reasoning backend.
 - SQLite audit log capturing target node, blast radius, metrics snapshot,
   assembled prompt, and returned plan for every request.
+  
 #### Developer Experience
 - `raag sample`, `raag tune`, and `raag master refactor` commands via Typer.
 - Styled terminal reporting and progress indication via Rich.

@@ -239,7 +239,7 @@ state, not planned scope.
 | Sample ↔ Tune binary contract | ✅ Complete |
 | Tune Engine — dependency graph | ✅ Complete |
 | Tune Engine — metrics | ✅ Complete |
-| Master Engine — vector store | 📋 Planned |
+| Master Engine — vector store | ✅ Complete |
 | Master Engine — GraphRAG pipeline | 📋 Planned |
 | CLI | 📋 Planned |
 | CI/CD guardrail | 📋 Planned |

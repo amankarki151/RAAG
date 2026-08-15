@@ -10,3 +10,7 @@ networkx~=3.4
 # CLI
 typer~=0.15
 rich~=13.9
+
+# Master Engine — retrieval
+qdrant-client~=1.12
+fastembed~=0.5

@@ -193,7 +193,7 @@ Converts structural data into a graph and measures it.
 
 ### Master Engine — Orchestration Layer
 
-**Stack:** Python 3.12 · Qdrant · SQLite
+**Stack:** Python 3.12 · Qdrant · SQLite · Anthropic API (Claude Sonnet 5, configurable)
 
 Where graph analytics constrains generative reasoning.
 
@@ -206,6 +206,12 @@ Where graph analytics constrains generative reasoning.
   Structural relevance gates semantic relevance, not the reverse.
 - **Context assembly** — the assembled prompt carries the target source, its
   exact Ca/Ce/I values, and each retrieved chunk labeled with its own metrics.
+- **Reasoning** — the assembled context is sent to Claude Sonnet 5 by default,
+  configurable via `RAAG_MODEL` to escalate to Opus 5 for higher-stakes or
+  more ambiguous requests. Kept behind a `Reasoner` protocol so the model —
+  or provider — is a configuration choice, not a code change. A `--dry-run`
+  mode assembles and prints the full prompt without calling the API, which is
+  how prompt assembly gets verified before it costs anything.
 - **Audit trail** — every request writes target node, full blast-radius node
   list, metrics snapshot, assembled prompt, and returned plan to SQLite.
 

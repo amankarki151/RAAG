@@ -258,7 +258,7 @@ state, not planned scope.
 | Tune Engine — metrics | ✅ Complete |
 | Master Engine — vector store | ✅ Complete |
 | Master Engine — full pipeline + AI integration | ✅ Complete |
-| CLI | 📋 Planned |
+| CLI | ✅ Complete |
 | CI/CD guardrail | 📋 Planned |
 | Editor extension | 📋 Planned |
 
@@ -304,35 +304,68 @@ cp .env.example .env
 ---
 
 ## Usage
-
+ 
 ### Extract syntax trees
-
+ 
 ```bash
-raag sample /path/to/repository
+raag sample run /path/to/repository --output snapshots/repo.raag.bin
 ```
-
+ 
 Traverses the target repository in parallel and writes a binary AST snapshot.
-
+ 
 ### Analyze architecture
-
+ 
 ```bash
-raag tune /path/to/repository
+raag tune run snapshots/repo.raag.bin --fail-on-instability
 ```
-
-Builds the dependency graph and emits a metrics report: per-module coupling,
-instability, cohesion, and any threshold violations, sorted by severity.
-
+ 
+Builds the dependency graph from a snapshot and emits a metrics report:
+per-module coupling, instability, cohesion, and any threshold violations,
+sorted by severity. `--fail-on-instability` exits non-zero on error-severity
+findings — this is the flag the CI gate uses to block a merge.
+ 
+### Index code for retrieval
+ 
+```bash
+raag master index snapshots/repo.raag.bin --repo-root .
+```
+ 
+Chunks the parsed code at AST boundaries, embeds it, and stores it in Qdrant
+with each chunk's coupling metrics attached as payload.
+ 
+### Search indexed code
+ 
+```bash
+raag master search "how are parse errors reported"
+```
+ 
+Semantic search over the indexed codebase. Add `--path <file>` (repeatable)
+to restrict results to specific files — the same mechanism blast-radius
+scoping drives automatically inside `refactor`.
+ 
 ### Request a refactoring analysis
-
+ 
 ```bash
-raag master refactor --target <module>
+raag master refactor <target-file> "<what you want done>" --dry-run
 ```
-
-Computes the blast radius for the target, retrieves structurally relevant
-context, and returns a grounded refactoring plan. Every invocation is logged.
-
----
-
+ 
+Computes the blast radius for the target — every file that would break, and
+every file it depends on — retrieves structurally relevant context scoped to
+that radius, and assembles a grounded prompt. `--dry-run` prints the exact
+prompt with zero API cost, for verifying context assembly before spending
+anything. Drop it to call the reasoning model for real. Every invocation,
+successful or failed, is logged to the audit trail.
+ 
+### Inspect the audit log
+ 
+```bash
+raag master audit
+```
+ 
+Lists every reasoning request made, including failures. Use
+`--record-id <n>` to see one request's full prompt and response, or
+`--target <file>` to see everything asked about a specific file.
+ 
 ## CI/CD Integration
 
 RAAG runs headless in continuous integration as an architectural guardrail.

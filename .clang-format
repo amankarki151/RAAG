@@ -1,0 +1,68 @@
+# RAAG C++ formatting.
+#
+# Based on Google's style with a wider column limit. The 80-column default is
+# a poor fit for code that names things like `wide_string_input_helper` and
+# `ts_node_child_by_field_name` — at 80 columns those wrap constantly, and
+# heavily-wrapped code is harder to read than slightly wider code.
+
+BasedOnStyle: Google
+Language: Cpp
+Standard: c++20
+
+ColumnLimit: 90
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# Pointer and reference binding to the type, not the name. The type is what
+# `int* p` describes; `int *p` reads as though the asterisk belongs to p.
+DerivePointerAlignment: false
+PointerAlignment: Left
+ReferenceAlignment: Left
+
+AccessModifierOffset: -4
+IndentAccessModifiers: false
+
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+
+BreakBeforeBraces: Attach
+BreakConstructorInitializers: BeforeColon
+ConstructorInitializerIndentWidth: 4
+PackConstructorInitializers: NextLine
+
+AlwaysBreakTemplateDeclarations: Yes
+SpaceAfterTemplateKeyword: false
+
+# Include ordering. Project headers first is deliberate and unusual: it means
+# a header that fails to include its own dependencies breaks immediately
+# rather than compiling by accident because a standard header happened to
+# come first.
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^"raag/'
+    Priority: 1
+  - Regex: '^<tree_sitter/'
+    Priority: 2
+  - Regex: '^<gtest/|^<gmock/'
+    Priority: 3
+  - Regex: '^<[a-z_]+>$'
+    Priority: 4
+  - Regex: '.*'
+    Priority: 5
+
+SeparateDefinitionBlocks: Always
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignTrailingComments: true
+BinPackArguments: false
+BinPackParameters: false
+
+ReflowComments: true
+FixNamespaceComments: true

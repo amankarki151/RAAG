@@ -4,16 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "raag"
-version = "0.1.0"
+version = "0.2.0"
 description = "Repository-scale architectural analytics"
 requires-python = ">=3.12"
 license = { file = "LICENSE" }
 
+[project.scripts]
+raag = "raag_cli.main:main"
+
 [tool.setuptools]
-package-dir = { "raag_tune" = "tune_engine/raag_tune", "raag_master" = "master_engine/raag_master" }
+package-dir = { "raag_tune" = "tune_engine/raag_tune", "raag_master" = "master_engine/raag_master", "raag_cli" = "cli/raag_cli" }
 
 [tool.setuptools.packages.find]
-where = ["tune_engine", "master_engine"]
+where = ["tune_engine", "master_engine", "cli"]
 
 # -----------------------------------------------------------------------------
 # Ruff — linting and formatting
@@ -74,7 +77,7 @@ warn_unreachable = true
 warn_return_any = true
 explicit_package_bases = true
 namespace_packages = true
-mypy_path = ["tune_engine", "master_engine"]
+mypy_path = ["tune_engine", "master_engine", "cli"]
 exclude = ["(?x)(^|/)tests/"]
 disallow_untyped_defs = true
 disallow_any_generics = true
@@ -87,7 +90,7 @@ ignore_missing_imports = true
 
 
 [[tool.mypy.overrides]]
-module = ["*.tests.*", "master_engine.tests.*", "tune_engine.tests.*"]
+module = ["*.tests.*", "master_engine.tests.*", "tune_engine.tests.*", "cli.tests.*"]
 disallow_untyped_defs = false
 check_untyped_defs = false
 
@@ -97,16 +100,20 @@ check_untyped_defs = false
 # -----------------------------------------------------------------------------
 
 [tool.pytest.ini_options]
-testpaths = ["tune_engine/tests", "master_engine/tests"]
+testpaths = ["tune_engine/tests", "master_engine/tests", "cli/tests"]
 python_files = ["test_*.py"]
+norecursedirs = ["sample_engine", ".git", ".venv", "node_modules", "build*"]
 addopts = [
     "--strict-markers",
     "--strict-config",
+    "--import-mode=importlib",
     "-ra",
 ]
 
+
+
 [tool.coverage.run]
-source = ["tune_engine/raag_tune", "master_engine/raag_master"]
+source = ["tune_engine/raag_tune", "master_engine/raag_master", "cli/raag_cli"]
 branch = true
 
 [tool.coverage.report]
@@ -115,4 +122,3 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "raise NotImplementedError",
 ]
-

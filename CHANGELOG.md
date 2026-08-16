@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `raag sample`, `raag tune`, and `raag master refactor` commands via Typer.
 - Styled terminal reporting and progress indication via Rich.
 - Editor extension surfacing module instability as inline decorations.
+- Removed the provisional `python -m raag_tune` / `python -m raag_master`
+  entry points, superseded by the unified `raag` CLI.
 
 #### Infrastructure
 - Monorepo layout with independently buildable engine boundaries.

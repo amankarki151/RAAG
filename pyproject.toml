@@ -8,6 +8,16 @@ version = "0.3.0"
 description = "Repository-scale architectural analytics"
 requires-python = ">=3.12"
 license = { file = "LICENSE" }
+dependencies = [
+    "networkx~=3.4",
+    "typer~=0.15",
+    "rich~=13.9",
+    "qdrant-client~=1.12",
+    "fastembed~=0.5",
+    "anthropic~=0.40",
+    "python-dotenv~=1.0",
+    "tqdm~=4.67",
+]
 
 [project.scripts]
 raag = "raag_cli.main:main"

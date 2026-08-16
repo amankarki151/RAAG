@@ -41,8 +41,7 @@ COPY tune_engine/ ./tune_engine/
 COPY master_engine/ ./master_engine/
 COPY cli/ ./cli/
 
-RUN pip install --no-cache-dir --break-system-packages -r requirements.txt \
-    && pip install --no-cache-dir --break-system-packages -e .
+RUN pip install --no-cache-dir --break-system-packages -e .
 
 ENTRYPOINT ["raag"]
 CMD ["--help"]

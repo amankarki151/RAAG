@@ -15,18 +15,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Developer Experience
 - Editor extension surfacing module instability as inline decorations.
 
-#### Infrastructure
-- Monorepo layout with independently buildable engine boundaries.
-- CMake build configuration for the C++ extraction layer.
-- Container definitions and service composition for local orchestration.
-- Continuous integration workflow enforcing instability thresholds on pull
-  requests, with automated remediation suggestions.
-
 ### Documentation
 - Technical specification covering architecture, engine internals, metric
   definitions, and design rationale.
 
 ---
+
+## [0.4.0] - 2026-08-16
+
+Containerized and CI-gated: RAAG now analyses its own source on every pull
+request, blocking merges that push a core module's instability past
+threshold.
+
+### Added
+
+#### Infrastructure
+- Two-stage Dockerfile: the Sample Engine compiles in a full build image,
+  and only the resulting binary is copied into a slim Python runtime.
+- `docker-compose.yml` wiring the `raag` service to Qdrant by service name,
+  never `localhost`, so it runs identically outside a developer's machine.
+- GitHub Actions workflow analysing RAAG's own source on every pull request
+  and push to `main`, posting or updating a single PR comment per thread
+  rather than one per push, and uploading the full metrics report as a
+  build artifact.
+- `scripts/format_pr_comment.py` rendering `--export-metrics` JSON output
+  as a Markdown PR comment.
+
+### Changed
+- Instability threshold for the self-analysis gate calibrated to 0.8, above
+  the CLI default of 0.4. RAAG's own orchestration layer legitimately has
+  moderate instability by design — a composition root is supposed to
+  depend on many collaborators. This is the exact gap documented in
+  `docs/METRICS.md`: instability alone cannot distinguish a composition
+  root from a genuinely fragile module without a paired abstractness
+  figure.
+
+### Documentation
+- `requirements.txt` and `pyproject.toml`'s dependency list were two
+  separate sources of truth that could silently drift; consolidated
+  dependency declarations into `pyproject.toml` after the drift caused
+  `pip install -e .` to fail in both Docker and CI while working locally.
+
+---
+
 ## [0.3.0] - 2026-08-16
 
 Three engines, one command surface: `raag sample`, `raag tune`, `raag master`.
@@ -178,7 +209,8 @@ platform version bump is only a MINOR increment.
 
 ---
 
-[Unreleased]: https://github.com/amankarki151/RAAG/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/amankarki151/RAAG/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/amankarki151/RAAG/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/amankarki151/RAAG/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/amankarki151/RAAG/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/amankarki151/RAAG/releases/tag/v0.1.0

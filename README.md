@@ -7,6 +7,7 @@
 *Repository-scale dependency analysis, quantified architectural metrics, and blast-radius-scoped refactoring intelligence.*
 
 [![Version](https://img.shields.io/github/v/tag/amankarki151/RAAG?label=version)](https://github.com/amankarki151/RAAG/tags)
+[![Architecture Gate](https://github.com/amankarki151/RAAG/actions/workflows/architecture.yml/badge.svg)](https://github.com/amankarki151/RAAG/actions/workflows/architecture.yml)
 [![C++](https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus&logoColor=white)](https://isocpp.org/)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![CMake](https://img.shields.io/badge/CMake-3.28%2B-064F8C?logo=cmake&logoColor=white)](https://cmake.org/)
@@ -262,7 +263,7 @@ state, not planned scope.
 | Master Engine — vector store | ✅ Complete |
 | Master Engine — full pipeline + AI integration | ✅ Complete |
 | CLI | ✅ Complete |
-| CI/CD guardrail | 📋 Planned |
+| Continuous integration workflow | ✅ Complete |
 | Editor extension | 📋 Planned |
 
 Legend: ✅ Complete · 🔧 In progress · 📋 Planned

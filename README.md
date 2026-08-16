@@ -6,6 +6,7 @@
 
 *Repository-scale dependency analysis, quantified architectural metrics, and blast-radius-scoped refactoring intelligence.*
 
+[![Version](https://img.shields.io/github/v/tag/amankarki151/RAAG?label=version)](https://github.com/amankarki151/RAAG/tags)
 [![C++](https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus&logoColor=white)](https://isocpp.org/)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![CMake](https://img.shields.io/badge/CMake-3.28%2B-064F8C?logo=cmake&logoColor=white)](https://cmake.org/)
@@ -39,7 +40,9 @@
 
 ## Writing
 
-- [Building a Parallel C++ Source Parser: jthread, stop_token, and the Deadlock I Didn't See Coming](https://amankarki.hashnode.dev/parallel-cpp-source-parser-jthread-stop-token) — *Hashnode (also on Medium)*
+- [Building a Parallel C++ Source Parser: jthread, stop_token, and the Deadlock I Didn't See Coming](https://amankarki.hashnode.dev/parallel-cpp-source-parser-jthread-stop-token) — Hashnode, also on Medium via Stackademic
+- [I Ran a Coupling Analyzer on nlohmann/json and fmt. It Found a Class Doing 55 Jobs](https://amankarki.hashnode.dev/cpp-coupling-metrics-nlohmann-json-fmt) — Hashnode, also on Medium via Stackademic
+- [I Built an AI Refactoring Tool That Can't See More Code Than the Dependency Graph Allows](https://amankarki.hashnode.dev/graphrag-code-refactoring-blast-radius) — Hashnode
 
 ---
 

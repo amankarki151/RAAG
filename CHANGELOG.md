@@ -13,11 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 #### Developer Experience
-- `raag sample`, `raag tune`, and `raag master refactor` commands via Typer.
-- Styled terminal reporting and progress indication via Rich.
 - Editor extension surfacing module instability as inline decorations.
-- Removed the provisional `python -m raag_tune` / `python -m raag_master`
-  entry points, superseded by the unified `raag` CLI.
 
 #### Infrastructure
 - Monorepo layout with independently buildable engine boundaries.
@@ -29,6 +25,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 - Technical specification covering architecture, engine internals, metric
   definitions, and design rationale.
+
+---
+## [0.3.0] - 2026-08-16
+
+Three engines, one command surface: `raag sample`, `raag tune`, `raag master`.
+
+### Added
+
+#### Developer Experience
+- Unified `raag` CLI via Typer, replacing three separate module invocations.
+- Rich terminal rendering, instability colour-banded to the same thresholds
+  the violation checks use, so colour and verdict never disagree.
+- `--fail-on-instability` on `raag tune run` — the exit-code contract Day 9's
+  CI gate depends on: 0 clean, 1 violations found, 2 could not run.
+- Failure messages that carry their own fix: a missing Sample Engine binary
+  prints the build command; an unreachable Qdrant prints the start command,
+  checked before any vector operation.
+
+### Changed
+- Removed the provisional `python -m raag_tune` / `python -m raag_master`
+  entry points, superseded by the unified CLI. This alone recovered most of
+  a 71%-to-86% coverage jump — 294 statements of dead code had been counted
+  as untested.
+
+### Documentation
+- `.clang-format` and `docs/ARCHITECTURE.md`, both referenced by
+  `CONTRIBUTING.md` since the project was scaffolded but never created
+  until now.
 
 ---
 
@@ -154,6 +178,7 @@ platform version bump is only a MINOR increment.
 
 ---
 
-[Unreleased]: https://github.com/amankarki151/RAAG/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/amankarki151/RAAG/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/amankarki151/RAAG/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/amankarki151/RAAG/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/amankarki151/RAAG/releases/tag/v0.1.0

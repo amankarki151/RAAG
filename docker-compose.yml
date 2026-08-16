@@ -1,0 +1,42 @@
+# Local orchestration: RAAG plus the Qdrant it depends on.
+#
+# The two services are decoupled the same way the engines are — `raag`
+# resolves qdrant by service name over the compose network, so nothing here
+# hard-codes localhost, which would break the moment this runs anywhere but a
+# developer's laptop.
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - ./qdrant_storage:/qdrant/storage
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/127.0.0.1/6333"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  raag:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    environment:
+      - RAAG_QDRANT_URL=http://qdrant:6333
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    volumes:
+      # Mount rather than bake in: a repository to analyse is supplied at run
+      # time, not chosen when the image is built.
+      - ./:/data:ro
+      - ./snapshots:/app/snapshots
+      - ./metrics:/app/metrics
+    working_dir: /app
+    # No command by default — this service is invoked directly, e.g.:
+    #   docker compose run raag sample run /data --output snapshots/repo.raag.bin
+    command: ["--help"]

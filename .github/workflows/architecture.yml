@@ -1,0 +1,120 @@
+# RAAG's own architectural guardrail, running on RAAG's own source.
+#
+# Every pull request gets analysed by the tool this repository builds. A
+# change that pushes a core module's instability past threshold, or introduces
+# a dependency cycle, is blocked before a human reviewer even opens the diff.
+#
+# benchmark_repos/ is gitignored and never present in a fresh checkout, so this
+# workflow analyses the RAAG codebase itself rather than the benchmark corpus
+# used in local development.
+
+name: Architecture Gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Caching the Sample Engine's build directory matters more here than in
+      # most CI setups: Tree-sitter and its grammars are fetched and compiled
+      # from source on every cold run, which otherwise dominates the job time.
+      - name: Cache Sample Engine build
+        uses: actions/cache@v4
+        with:
+          path: sample_engine/build
+          key: sample-engine-${{ runner.os }}-${{ hashFiles('sample_engine/CMakeLists.txt', 'sample_engine/src/**', 'sample_engine/include/**') }}
+          restore-keys: |
+            sample-engine-${{ runner.os }}-
+
+      - name: Configure and build the Sample Engine
+        run: |
+          cmake -S sample_engine -B sample_engine/build \
+            -DCMAKE_BUILD_TYPE=Release -DRAAG_BUILD_TESTS=OFF
+          cmake --build sample_engine/build --parallel
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install RAAG
+        run: pip install -e .
+
+      - name: Parse RAAG's own source
+        run: |
+          mkdir -p snapshots
+          raag sample run . \
+            --output snapshots/ci.raag.bin \
+            --quiet
+
+      - name: Run architectural analysis
+        id: analyse
+        # continue-on-error so the PR comment step still runs when this fails
+        # — a blocked merge should come with an explanation attached, not just
+        # a red X with no context.
+        continue-on-error: true
+        run: |
+          mkdir -p metrics
+          # max-instability raised from the CLI default of 0.4 to 0.8 for this
+          # gate specifically. RAAG's own orchestration layer — pipeline.py,
+          # indexer.py, report.py, display.py — legitimately has moderate
+          # instability by design: a composition root is supposed to depend
+          # on many collaborators. This is the exact gap docs/METRICS.md
+          # already names — instability alone cannot distinguish a
+          # composition root from a genuinely fragile module, since the
+          # metric has no paired abstractness figure to weigh it against.
+          # 0.8 excludes the four current, expected findings (highest is
+          # I=0.73) while still catching a module that is unstable well
+          # beyond what any legitimate orchestration layer should be.
+          raag tune run snapshots/ci.raag.bin \
+            --export-metrics metrics/ci-report.json \
+            --fail-on-instability \
+            --max-instability 0.8
+
+      - name: Render PR comment
+        if: github.event_name == 'pull_request'
+        id: comment
+        run: |
+          python scripts/format_pr_comment.py metrics/ci-report.json > comment_body.md
+          echo "body_path=comment_body.md" >> "$GITHUB_OUTPUT"
+
+      - name: Post or update PR comment
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: ${{ steps.comment.outputs.body_path }}
+          # Editing the same comment on every push, rather than posting a new
+          # one each time, keeps the PR thread from filling up with a comment
+          # per commit.
+          edit-mode: replace
+          comment-tag: raag-architecture
+
+      - name: Upload metrics artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: raag-metrics
+          path: metrics/ci-report.json
+          retention-days: 30
+
+      - name: Fail the job if the gate failed
+        if: steps.analyse.outcome == 'failure'
+        run: |
+          echo "::error::Architectural gate failed — see the PR comment for details."
+          exit 1

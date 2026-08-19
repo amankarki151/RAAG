@@ -235,6 +235,14 @@ Codebases using a member-naming convention such as `x_` are affected least.
 today says less than its instability trend across the last hundred commits.
 Historical analysis is on the roadmap.
 
+**LCOM4 overstates on value objects.** A small class whose methods are
+independent computed properties — `is_leaf`, `is_root`, `byte_length` on an
+AST node, for instance — scores one component per property, since none share
+state or call each other. That is technically correct and practically
+useless: a value object is cohesive by virtue of describing one thing, not by
+its methods touching shared fields. Detecting this case properly would need
+a heuristic distinguishing data classes from behavioural ones.
+
 ---
 
 ## References

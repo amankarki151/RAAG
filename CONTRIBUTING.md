@@ -409,7 +409,10 @@ This is not a formality. If your PR trips the gate, the options are:
 - **Restructure the change** to avoid the added coupling — usually the right
   answer.
 - **Argue that the threshold is wrong** for that module, with reasoning. This
-  is a legitimate outcome and has resulted in threshold changes before.
+  is a legitimate outcome — the instability threshold in this project's own
+  CI gate was calibrated exactly this way, after the gate correctly flagged
+  composition roots (`pipeline.py`, `indexer.py`, `report.py`, `display.py`)
+  that are unstable by design rather than by defect.
 
 What is not acceptable is disabling the check to merge.
 

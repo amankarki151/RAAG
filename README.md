@@ -20,10 +20,12 @@
 ## Table of Contents
 
 - [Writing](#writing)
+- [Demo](#demo)
 - [Overview](#overview)
 - [The Problem](#the-problem)
 - [How RAAG Works](#how-raag-works)
 - [Architecture](#architecture)
+- [Results](#results)
 - [Engines](#engines)
 - [Metrics Reference](#metrics-reference)
 - [Project Status](#project-status)
@@ -46,6 +48,34 @@
 - [I Built an AI Refactoring Tool That Can't See More Code Than the Dependency Graph Allows](https://amankarki.hashnode.dev/graphrag-code-refactoring-blast-radius) — Hashnode
 
 ---
+
+## Demo
+
+[▶ Watch the 35-second walkthrough](https://youtu.be/kbh707DNPeU)
+
+<details>
+<summary>Architectural analysis on a real 579-file benchmark</summary>
+
+![raag tune run output](docs/images/raag_tune_run_snapshots_repo_raag_bin.png)
+</details>
+
+<details>
+<summary>Semantic search over indexed code</summary>
+
+![raag master search output](docs/images/raag_master_search.png)
+</details>
+
+<details>
+<summary>Audit trail — every request logged, including failures</summary>
+
+![raag master audit output](docs/images/raag_master_audit.png)
+</details>
+
+<details>
+<summary>CI gate blocking a real pull request</summary>
+
+![CI gate passing](docs/images/action_green.png)
+</details>
 
 ## Overview
 
@@ -123,6 +153,10 @@ memory. Any engine can be replaced, benchmarked, or tested in isolation.
 
 ## Architecture
 
+Full system design, engine boundaries, and the reasoning behind each — data
+flow, why three languages, versioned contracts over shared memory — lives in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) rather than duplicated here.
+
 ## Results
 
 Benchmarked on 579 source files from open-source C++ repositories (Release build, 8 cores):
@@ -133,6 +167,10 @@ Benchmarked on 579 source files from open-source C++ repositories (Release build
 | Parallel | 0.449 s | 1290.2 files/s |
 
 **3.69x speedup.** 1,099,446 AST nodes extracted, zero parse failures, serialized to a 27.6 MB versioned binary snapshot.
+
+**Test coverage:** 86% (line + branch) across 307 tests. The dependency
+graph, metrics, retrieval, and pipeline orchestration — where a bug would
+produce a wrong architectural conclusion — carry the heaviest test weight.
 
 ### Design Constraints
 
@@ -191,6 +229,7 @@ file into a normalized syntax tree.
 - **Output** — a versioned, binary-packed snapshot. The schema carries its own
   version field, independent of the platform version.
 
+
 ### Tune Engine — Quality Analytics Layer
 
 **Stack:** Python 3.12 (strict typing, asyncio) · NetworkX
@@ -205,6 +244,7 @@ Converts structural data into a graph and measures it.
   (see [Metrics Reference](#metrics-reference)).
 - **Rule enforcement** — LCOM-derived Single Responsibility Principle checks,
   and static RAII pattern verification for C++ sources.
+
 
 ### Master Engine — Orchestration Layer
 
@@ -244,7 +284,10 @@ Where graph analytics constrains generative reasoning.
 **On interpreting instability:** a high `I` is not automatically a defect. An
 adapter or plugin layer *should* be unstable — that is its job. The signal RAAG
 looks for is a module that is both foundational (high Ca) and unstable, or a
-core module whose instability is rising over time.
+core module whose instability is rising over time. Full derivations, worked
+examples, and documented limitations live in
+[`docs/METRICS.md`](docs/METRICS.md).
+ 
 
 ---
 
@@ -265,8 +308,6 @@ state, not planned scope.
 | CLI | ✅ Complete |
 | Continuous integration workflow | ✅ Complete |
 | Editor extension | 📋 Planned |
-
-Legend: ✅ Complete · 🔧 In progress · 📋 Planned
 
 ---
 
@@ -380,10 +421,20 @@ threshold, the check fails and a remediation suggestion is posted directly to
 the pull request.
 
 ```yaml
-# .github/workflows/architecture.yml
-- name: Architectural analysis
-  run: raag tune . --fail-on-instability 0.4 --scope core
+# .github/workflows/architecture.yml (excerpt)
+- name: Run architectural analysis
+  run: |
+    raag tune run snapshots/ci.raag.bin \
+      --export-metrics metrics/ci-report.json \
+      --fail-on-instability \
+      --max-instability 0.8
 ```
+
+The threshold here is calibrated above the CLI's own default (`0.4`) — RAAG's
+orchestration layer legitimately has moderate instability by design, and the
+reasoning for that calibration is documented directly in the workflow file
+rather than asserted here. This is the same gate shown blocking a real pull
+request in the [Demo](#demo) section above.
 
 This converts architectural review from a manual, reactive process into an
 automated gate that runs before a human ever opens the diff.
@@ -394,27 +445,28 @@ automated gate that runs before a human ever opens the diff.
 
 ```
 RAAG/
-├── sample_engine/          # C++20 extraction layer
-│   ├── include/raag/       # Public headers
-│   ├── src/                # Implementation
-│   ├── bindings/           # Pybind11 module
-│   └── CMakeLists.txt
-├── tune_engine/            # Python graph analytics
-│   ├── raag_tune/
-│   └── tests/
-├── master_engine/          # Python orchestration
-│   ├── raag_master/
-│   └── tests/
-├── cli/                    # Typer command-line interface
-├── vscode-extension/       # TypeScript editor integration
-├── docs/                   # Specifications and contracts
-│   ├── ARCHITECTURE.md
-│   ├── CONTRACTS.md        # Binary snapshot schema
-│   └── METRICS.md          # Metric derivations
-├── .github/workflows/
-├── docker-compose.yml
-├── CHANGELOG.md
-└── README.md
+|-- sample_engine/          # C++20 extraction layer
+|   |-- include/raag/       # Public headers
+|   |-- src/                # Implementation
+|   |-- bindings/           # Pybind11 module
+|   `-- CMakeLists.txt
+|-- tune_engine/            # Python graph analytics
+|   |-- raag_tune/
+|   `-- tests/
+|-- master_engine/          # Python orchestration
+|   |-- raag_master/
+|   `-- tests/
+|-- cli/                    # Typer command-line interface
+|-- scripts/                # CI support (PR comment rendering)
+|-- docs/                   # Specifications and contracts
+|   |-- ARCHITECTURE.md
+|   |-- CONTRACTS.md        # Binary snapshot schema
+|   `-- METRICS.md          # Metric derivations
+|-- .github/workflows/
+|-- Dockerfile
+|-- docker-compose.yml
+|-- CHANGELOG.md
+`-- README.md
 ```
 
 ---

@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0] - 2026-08-19
+
+First public release. Parse a repository, quantify its architecture, retrieve
+code by structural relevance, and get AI-assisted refactoring suggestions
+scoped to exactly what a change can reach — end to end, behind one CLI,
+gated by CI.
+
+
 ## [0.4.0] - 2026-08-16
 
 Containerized and CI-gated: RAAG now analyses its own source on every pull

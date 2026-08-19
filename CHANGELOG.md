@@ -23,10 +23,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2026-08-19
 
-First public release. Parse a repository, quantify its architecture, retrieve
-code by structural relevance, and get AI-assisted refactoring suggestions
-scoped to exactly what a change can reach — end to end, behind one CLI,
-gated by CI.
+First public release.
+
+RAAG parses a repository, builds its dependency graph, and computes real
+coupling and cohesion metrics — then scopes AI-assisted refactoring
+suggestions to exactly the files a change can structurally reach, not
+whatever reads as similar. Every request is retrieved, reasoned over, and
+logged for audit. Every pull request against this repository is analysed by
+the tool it ships, and a merge that pushes a core module's instability past
+threshold is blocked automatically.
+
+### What's included
+
+- **Sample Engine** (C++20) — parallel AST extraction via Tree-sitter and
+  `std::jthread`, versioned binary snapshots
+- **Tune Engine** (Python) — dependency graph construction, Ca/Ce/Instability,
+  LCOM1/LCOM4 cohesion, cycle detection, configurable violation thresholds
+- **Master Engine** (Python) — AST-boundary chunking, semantic embeddings,
+  Qdrant retrieval scoped by blast radius, LLM reasoning behind a swappable
+  protocol, SQLite audit log
+- **Unified `raag` CLI** — one command surface across all three engines,
+  `--fail-on-instability` as the exit-code contract CI depends on
+- **Docker + CI** — containerised build, and a GitHub Actions gate that
+  analyses this repository's own source on every pull request
+
+### By the numbers
+
+- 579-file benchmark run (nlohmann/json + fmt): 3.69x parsing speedup across
+  8 threads, 913 dependency edges, 1 cycle found, 9 real threshold
+  violations
+- 307 tests, 86% coverage
+- Self-analysis found and correctly flagged 4 real instability violations in
+  this project's own orchestration layer — see `docs/METRICS.md` for the
+  documented limitation that gate calibration addresses
+
+### Documentation
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — system design and engine
+  boundaries
+- [`docs/CONTRACTS.md`](docs/CONTRACTS.md) — inter-engine binary format
+- [`docs/METRICS.md`](docs/METRICS.md) — every metric, its rationale, and its
+  stated limitations
+- Three-part build writeup on Hashnode, linked in the README
+
+### Known limitations
+
+Import resolution is syntactic, not semantic. Call-graph edges are not
+extracted. Instability lacks a paired abstractness measure. All documented
+in `docs/METRICS.md` and `docs/ARCHITECTURE.md` rather than glossed over.
 
 
 ## [0.4.0] - 2026-08-16

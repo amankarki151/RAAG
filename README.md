@@ -51,7 +51,7 @@
 
 ## Demo
 
-[▶ Watch the 35-second walkthrough](https://youtu.be/kbh707DNPeU)
+[▶ Watch the walkthrough](https://youtu.be/kbh707DNPeU)
 
 <details>
 <summary>Architectural analysis on a real 579-file benchmark</summary>

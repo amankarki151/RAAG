@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/images/banner.png" width="100%" alt="RAAG — AI-Powered Architectural Analytics Platform">
+
 # RAAG
 
 **AI-Powered Architectural Analytics Platform**

@@ -1,0 +1,76 @@
+{
+  "name": "raag-vscode",
+  "displayName": "RAAG — Architectural Instability",
+  "description": "Inline coupling and instability metrics from RAAG, computed by the real analysis engine, not reimplemented in the editor.",
+  "version": "0.1.0",
+  "publisher": "amankarki151",
+  "author": {
+    "name": "Aman Karki"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters",
+    "Visualization"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amankarki151/RAAG"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "raag.analyzeWorkspace",
+        "title": "RAAG: Analyze Workspace"
+      },
+      {
+        "command": "raag.clearDecorations",
+        "title": "RAAG: Clear Instability Decorations"
+      }
+    ],
+    "configuration": {
+      "title": "RAAG",
+      "properties": {
+        "raag.cliPath": {
+          "type": "string",
+          "default": "raag",
+          "description": "Path to the raag executable. Defaults to whatever 'raag' resolves to on PATH — set this explicitly if RAAG lives in a virtual environment not activated in your shell."
+        },
+        "raag.instabilityWarnThreshold": {
+          "type": "number",
+          "default": 0.4,
+          "description": "Instability value at which a file is decorated yellow."
+        },
+        "raag.instabilityErrorThreshold": {
+          "type": "number",
+          "default": 0.7,
+          "description": "Instability value at which a file is decorated red."
+        },
+        "raag.minAfferentForWarning": {
+          "type": "number",
+          "default": 3,
+          "description": "Afferent coupling floor below which instability is not decorated at all. An unstable leaf nothing depends on is not a finding — this mirrors the same gate the CLI's own violation checks use."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.x",
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "typescript": "^5.4.0"
+  }
+}

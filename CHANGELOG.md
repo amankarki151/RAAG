@@ -21,6 +21,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-08-21
+
+VS Code extension published, surfacing coupling and instability inline in
+the editor — shells out to the real `raag` CLI rather than reimplementing
+metric computation, so it can never drift from what the CLI itself computes.
+
+### Added
+- `raag-vscode`: inline decorations showing Ca/Ce/I on analysed files
+- `RAAG: Analyze Workspace` and `RAAG: Clear Instability Decorations` commands
+- Colour bands matching the exact thresholds RAAG's own CI gate uses
+
+---
+
 ## [1.0.0] - 2026-08-19
 
 First public release.

@@ -58,6 +58,8 @@
 <details>
 <summary>Architectural analysis on a real 579-file benchmark</summary>
 
+The VS Code extension is available directly from the [Marketplace](https://marketplace.visualstudio.com/items?itemName=amankarki151.raag-vscode) — install it, then run **RAAG: Analyze Workspace** to see this inline.
+
 ![raag tune run output](docs/images/raag_tune_run_snapshots_repo_raag_bin.png)
 </details>
 
@@ -309,7 +311,7 @@ state, not planned scope.
 | Master Engine — full pipeline + AI integration | ✅ Complete |
 | CLI | ✅ Complete |
 | Continuous integration workflow | ✅ Complete |
-| Editor extension | 📋 Planned |
+| Editor extension | ✅ Complete |
 
 ---
 
